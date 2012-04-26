@@ -1,0 +1,56 @@
+<form class="well form-inline">
+  <label>Date range</label>
+  <input class="auto-kal" type="text" value="" />
+  <button type="submit" class="btn"><i class="icon-search"></i>Go</button>
+</form>
+
+<div class="well">
+  <div class="channel">
+  <script>
+  $(document).ready(function() {
+    var path, now, startDate, endDate;
+    
+    path = window.location.pathname + ".json"
+
+    now = new Date();
+    startDate = now;
+    startDate.setDate(startDate.getDate() - 31);
+    path = path + "?startDate=" + startDate.toJSON();
+    alert(path);
+
+    $.getJSON(path, function (data) {
+      var items = [];
+      function pad(n){return n<10 ? '0'+n : n};
+      var info='<div class="alert alert-info"><a class="close" data-dismiss="alert">&times</a>';
+      info += '<b>INFO</b> Showing content for the last 24 hours</div>';
+      if (data.messages.length === 0) {
+        $('.channel').prepend("<h2>No records for that channel :(</h2>");
+      } else {
+        $('.channel').prepend(info);
+        $.each(data.messages, function(key, val) {
+                var t = new Date(val.time);
+                var time = [pad(t.getHours()), pad(t.getMinutes()), pad(t.getSeconds())].join(':');
+          items.push('<li><span class="time">' + time + '</span> ' + 
+                         '<span class="username">&lt' + val.username + '&gt </span>' + 
+                         '<span class="message">' + val.message + '</span></li>');
+        });
+      }
+
+      $('<ul/>', {
+        html: items.join('')
+      }).appendTo('.channel');
+      $('.message').linkURLs();
+    })
+    .error(function(jqXHR, textStatus, errorThrown) { 
+      if (textStatus === "error") {
+        switch(errorThrown) {
+                case "Not Found":
+                  $('.channel').prepend("<h2>Error loading channel</h2>");
+                  break;
+        }
+      }
+    })
+  });
+  </script>
+  </div>
+</div>
